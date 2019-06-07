@@ -7,6 +7,26 @@
 #include <iostream>
 
 
+/* For comparison of Template Objects these two template functions are used
+ * to account for the template being a pointer ( in this case c++ would
+ * compare the memory adress of the pointers)
+ *
+ * Chooses the the right function and returns a pointer either ways
+ * Has some necesarry overhead
+ */
+
+
+template<typename T>
+T * ptr(T && obj) { return &obj; } //turn rvalue reference into pointer!
+
+template<typename T>
+T * ptr(T & obj) { return &obj; } //turn reference into pointer!
+
+template<typename T>
+T * ptr(T * obj) { return obj; } //obj is already pointer, return it!
+
+
+
 enum  MODE
 {
     SMALLEST_FIRST = 0,
@@ -209,6 +229,7 @@ public:
     void add(const T& value)
     {
 
+
         std::shared_ptr<Node<T>> newNode = std::make_shared<Node<T>>(value);
 
         // Add to an empty list
@@ -222,8 +243,8 @@ public:
         }
         count++;
         // Insert at the head node
-        if((mode == SMALLEST_FIRST && value < first->getData()) ||
-                (mode == GREATEST_FIRST && value > first->getData()))
+        if((mode == SMALLEST_FIRST && *ptr(value) < *ptr(first->getData())) ||
+                (mode == GREATEST_FIRST && *ptr(value) > *ptr(first->getData())))
         {
 
             first->setPrev(newNode);
@@ -234,8 +255,8 @@ public:
         }
 
         // Insert at the tail node
-        if((mode == SMALLEST_FIRST && value > last->getData()) ||
-                (mode == GREATEST_FIRST && value < last->getData()))
+        if((mode == SMALLEST_FIRST && (*ptr(value) > *ptr(last->getData()))) ||
+                (mode == GREATEST_FIRST && (*ptr(value) < *ptr(last->getData()))))
         {
 
             last->setNext(newNode);
@@ -253,7 +274,7 @@ public:
 
             // find the point in the list to add the new element
             cursor = first;
-            while(cursor->getNext() != last && cursor->getNext()->getData() < value)
+            while(cursor->getNext() != last && *ptr(cursor->getNext()->getData()) < *ptr(value))
             {
                 advance();
             }
@@ -274,7 +295,7 @@ public:
         if(mode == MODE::GREATEST_FIRST)
         {
             cursor = last;
-            while(cursor->getPrev() != first && cursor->getPrev()->getData() < value)
+            while(cursor->getPrev() != first && *ptr(cursor->getPrev()->getData()) < *ptr(value))
             {
                 advance(-1);
             }
